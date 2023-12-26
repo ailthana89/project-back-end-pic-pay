@@ -49,6 +49,8 @@ Para ambos tipos de usuário:
 <img src="http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge"/>
 
 ---
+TO DO LIST: https://github.com/users/ailthana89/projects/4/views/1
+
 Link do projeto: https://github.com/PicPay/picpay-desafio-backend
 
 
