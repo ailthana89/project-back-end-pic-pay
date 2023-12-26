@@ -30,13 +30,13 @@ Para ambos tipos de usuário:
 
 ### Payload
 
->POST /transaction
+>POST /transacao
 
 ~~~
 {
-    "value": 100.0,
-    "payer": 4,
-    "payee": 15
+    "valor": 100.0,
+    "pagador": 4,
+    "beneficiario": 15
 }
 ~~~
 
@@ -49,9 +49,9 @@ Para ambos tipos de usuário:
 <img src="http://img.shields.io/static/v1?label=STATUS&message=EM%20DESENVOLVIMENTO&color=GREEN&style=for-the-badge"/>
 
 ---
-TO DO LIST: https://github.com/users/ailthana89/projects/4/views/1
+To-Do List: https://github.com/users/ailthana89/projects/4/views/1
 
-Link do projeto: https://github.com/PicPay/picpay-desafio-backend
+Projeto: https://github.com/PicPay/picpay-desafio-backend
 
 
 
