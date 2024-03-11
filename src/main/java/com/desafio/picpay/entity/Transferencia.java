@@ -1,17 +1,18 @@
 package com.desafio.picpay.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@Entity(name = "transferencia")
+@Table(name = "transferencia")
+@EqualsAndHashCode(of = "id")
 public class Transferencia {
 
     @Id
@@ -26,12 +27,13 @@ public class Transferencia {
     @JoinColumn(name = "destinatario_id", nullable = false)
     private Usuario destinatario;
 
-    @Positive
     private BigDecimal valor;
 
-    public Transferencia(Usuario remetente, Usuario destinatario, BigDecimal valor) {
-        this.remetente = remetente;
-        this.destinatario = destinatario;
-        this.valor = valor;
-    }
+    private LocalDateTime localDateTime;
+
+//    public Transferencia(Usuario remetente, Usuario destinatario, BigDecimal valor) {
+//        this.remetente = remetente;
+//        this.destinatario = destinatario;
+//        this.valor = valor;
+//    }
 }
