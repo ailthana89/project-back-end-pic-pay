@@ -32,18 +32,25 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioDTO criarUsuario(UsuarioDTO dto) {
+        validaDocumento(dto);
         Usuario usuario = usuarioMapper.usuarioDtoParaUsuario(dto);
-        //validaDocumento(dto);
         Usuario usuarioSalvo = usuarioRepository.save(usuario);
         return usuarioMapper.usuarioParaUsuarioDto(usuarioSalvo);
     }
 
     @Override
     public void validaDocumento(UsuarioDTO dto) {
+        // Passo 1: instancia os objetos de validação
         CPFValidator cpfValidator = new CPFValidator();
         CNPJValidator cnpjValidator = new CNPJValidator();
+
+        // Passo 2: inicializa a constraintAnnotation, setando índices e parâmetros das validações
+        cpfValidator.initialize(null);
+        cnpjValidator.initialize(null);
+
         String documento = String.valueOf(dto.getDocumento());
 
+        // Passo 3: Efetua a validação em si
         if (documento != null) {
             if (cpfValidator.isValid(documento, null)) {
                 dto.setTipoUsuario(USUARIO_COMUM);
