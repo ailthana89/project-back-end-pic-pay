@@ -7,6 +7,7 @@ import com.picpay.project.entity.Usuario;
 import com.picpay.project.excecoes.SaldoInsuficienteException;
 import com.picpay.project.excecoes.TransferenciaRuntimeException;
 import com.picpay.project.excecoes.UsuarioNotFoundException;
+import com.picpay.project.mapper.TransferenciaMapper;
 import com.picpay.project.repository.TransferenciaRepository;
 import com.picpay.project.repository.UsuarioRepository;
 import com.picpay.project.service.AutorizacaoService;
@@ -22,52 +23,68 @@ import java.util.Optional;
 public class TransferenciaServiceImpl implements TransferenciaService {
     private final UsuarioRepository usuarioRepository;
 
+    private final TransferenciaMapper transferenciaMapper;
+
     private final TransferenciaRepository transferenciaRepository;
     private final AutorizacaoService autorizacaoService;
     private final NotificacaoService notificacaoService;
 
-    public TransferenciaServiceImpl(UsuarioRepository usuarioRepository, TransferenciaRepository transferenciaRepository, AutorizacaoService autorizacaoService, NotificacaoService notificacaoService) {
+    public TransferenciaServiceImpl(UsuarioRepository usuarioRepository, TransferenciaMapper transferenciaMapper, TransferenciaRepository transferenciaRepository, AutorizacaoService autorizacaoService, NotificacaoService notificacaoService) {
         this.usuarioRepository = usuarioRepository;
+        this.transferenciaMapper = transferenciaMapper;
         this.transferenciaRepository = transferenciaRepository;
         this.autorizacaoService = autorizacaoService;
         this.notificacaoService = notificacaoService;
     }
 
     @Override
-    @Transactional
-    public Transferencia realizarTransferencia(TransferenciaDTO transferenciaDTO) {
-         Usuario remetente = usuarioRepository.findById(transferenciaDTO.getRemetente())
-                .orElseThrow(() -> new UsuarioNotFoundException("Remetente não encontrado"));
+    public Usuario obterUsuario(Long usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new UsuarioNotFoundException("Usuário não encontrado"));
+    }
 
-        Usuario beneficiario = usuarioRepository.findById(transferenciaDTO.getDestinatario())
-                .orElseThrow(() -> new UsuarioNotFoundException("Beneficiário não encontrado"));
-
+    @Override
+    public void validarRemetente(Usuario remetente) {
         if (remetente.getTipoUsuario() == TipoUsuario.LOJISTA) {
             throw new TransferenciaRuntimeException("Lojistas não podem realizar transferências");
         }
+    }
 
-        if (remetente.getValorCarteira().compareTo(transferenciaDTO.getValorTransferencia()) < 0) {
+    @Override
+    public void verificarSaldo(Usuario remetente, BigDecimal valorTransferencia) {
+        if (remetente.getValorCarteira().compareTo(valorTransferencia) < 0) {
             throw new SaldoInsuficienteException("Saldo insuficiente para realizar a transferência");
         }
+    }
 
-        //MOCK NAO DISPONIVEL
-        //if (autorizacaoService.autorizarTransferencia()) {
-        //throw new AutorizacaoException("Autorização para a transferência não concedida");
-//        }
+    private Transferencia criarTransferencia(Usuario remetente, Usuario beneficiario, BigDecimal valorTransferencia) {
+        return new Transferencia(remetente, beneficiario, valorTransferencia);
+    }
 
-        Transferencia transferencia = new Transferencia(remetente, beneficiario, transferenciaDTO.getValorTransferencia());
-
-        BigDecimal novoSaldoPagador = remetente.getValorCarteira().subtract(transferenciaDTO.getValorTransferencia());
+    @Override
+    public void atualizarSaldo(Usuario remetente, Usuario beneficiario, BigDecimal valorTransferencia) {
+        BigDecimal novoSaldoPagador = remetente.getValorCarteira().subtract(valorTransferencia);
         remetente.setValorCarteira(novoSaldoPagador);
 
-        BigDecimal novoSaldoBeneficiario = beneficiario.getValorCarteira().add(transferenciaDTO.getValorTransferencia());
+        BigDecimal novoSaldoBeneficiario = beneficiario.getValorCarteira().add(valorTransferencia);
         beneficiario.setValorCarteira(novoSaldoBeneficiario);
 
         usuarioRepository.save(remetente);
         usuarioRepository.save(beneficiario);
+    }
 
-        //MOCK NAO DISPONIVEL
-        //notificacaoService.enviarNotificacaoTransferencia(beneficiario);
+    @Override
+    @Transactional
+    public Transferencia realizarTransferencia(TransferenciaDTO transferenciaDTO) {
+        Usuario remetente = obterUsuario(transferenciaDTO.getRemetente());
+        Usuario beneficiario = obterUsuario(transferenciaDTO.getDestinatario());
+
+        validarRemetente(remetente);
+        verificarSaldo(remetente, transferenciaDTO.getValorTransferencia());
+
+        Transferencia transferencia = criarTransferencia(remetente, beneficiario, transferenciaDTO.getValorTransferencia());
+
+        atualizarSaldo(remetente, beneficiario, transferenciaDTO.getValorTransferencia());
 
         return transferencia;
     }

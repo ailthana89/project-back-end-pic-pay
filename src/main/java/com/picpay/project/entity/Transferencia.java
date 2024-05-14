@@ -2,6 +2,7 @@ package com.picpay.project.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Component
 public class Transferencia {
 
     @Id
@@ -30,7 +32,7 @@ public class Transferencia {
 
     private BigDecimal valorTransferencia;
 
-    private LocalDateTime localDateTime;
+    private LocalDateTime localDateTime = LocalDateTime.now();
 
     public Transferencia(Usuario remetente, Usuario destinatario, BigDecimal valorTransferencia
 
